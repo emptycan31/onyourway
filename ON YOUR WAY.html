@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ON YOUR WAY</title>
+<style>
+:root{--bg:#eef2f1;--ink:#26333a;--sub:#5d6e74;--line:#c9d5d3;--acc:#3f7479;--accbg:#dfeae8;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141c1f;--ink:#e3ecea;--sub:#93a6aa;--line:#2c3a3e;--acc:#7fb5ba;--accbg:#1e2d30;--on:#0f181a}}
+:root[data-theme="dark"]{--bg:#141c1f;--ink:#e3ecea;--sub:#93a6aa;--line:#2c3a3e;--acc:#7fb5ba;--accbg:#1e2d30;--on:#0f181a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;line-height:1.9;min-height:100vh}
+main{max-width:34rem;margin:0 auto;padding:2.5rem 1.4rem 4rem}
+h1{font-family:"Helvetica Neue",Arial,sans-serif;font-size:1.6rem;font-weight:500;letter-spacing:.3em;margin:1.4rem 0 .8rem}
+h2{font-size:1.25rem;font-weight:600;line-height:1.7;margin:0 0 1.4rem}
+p{margin:0 0 1.2rem}
+.sub{color:var(--sub);font-size:.92rem}
+.lead{font-size:1.1rem;letter-spacing:.06em}
+.path{display:block;margin:0 auto;width:200px;height:40px}
+.path path{fill:none;stroke:var(--acc);stroke-width:1.5;stroke-linecap:round;stroke-dasharray:260;stroke-dashoffset:260;animation:draw 5s ease-out forwards}
+.path circle{fill:var(--acc);opacity:0;animation:dot 1s 4.6s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes dot{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.path path{animation:none;stroke-dashoffset:0}.path circle{animation:none;opacity:1}}
+.center{text-align:center}
+button{font:inherit;cursor:pointer}
+.opt{display:block;width:100%;text-align:left;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:.85rem 1rem;margin:0 0 .7rem;transition:background .3s,border-color .3s}
+.opt[aria-checked="true"]{background:var(--accbg);border-color:var(--acc)}
+.opt:focus-visible,.go:focus-visible,.link:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.go{background:var(--acc);color:var(--on);border:0;border-radius:999px;padding:.8rem 2rem;margin-top:.8rem;letter-spacing:.1em}
+.go[disabled]{opacity:.35;cursor:default}
+.link{background:none;border:0;color:var(--sub);text-decoration:underline;padding:.5rem 0;margin-right:1rem}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:.3rem 0 .5rem}
+.bar i{display:block;height:100%;background:var(--acc);transition:width 1.2s ease}
+.prog{height:2px;background:var(--line);margin-bottom:2rem}
+.prog i{display:block;height:100%;background:var(--acc);transition:width .6s}
+.cat{margin:0 0 1.6rem}
+.cat b{font-weight:600}
+.tip{background:var(--accbg);border-radius:10px;padding:1rem 1.1rem;margin:1.6rem 0}
+textarea{width:100%;min-height:6.5rem;font:inherit;line-height:1.8;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;resize:vertical}
+.note{border-left:2px solid var(--acc);padding-left:1rem;margin:0 0 1.2rem}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<section id="intro" class="center">
+  <svg class="path" viewBox="0 0 200 40" aria-hidden="true"><path d="M6 30 C40 30 50 8 90 14 S150 34 190 14"/><circle cx="190" cy="14" r="3.5"/></svg>
+  <h1>ON YOUR WAY</h1>
+  <p class="lead">自分の道を、自分のペースで。</p>
+  <p class="sub">9つの問いに、答えてみてください。<br>正解も、点数の良し悪しもありません。</p>
+  <button class="go" id="start">はじめる</button>
+</section>
+
+<section id="quiz" hidden>
+  <div class="prog" aria-hidden="true"><i id="pbar"></i></div>
+  <p class="sub" id="count"></p>
+  <h2 id="q" aria-live="polite"></h2>
+  <div id="opts" role="radiogroup" aria-labelledby="q"></div>
+  <button class="link" id="back">戻る</button>
+  <button class="go" id="next" disabled>次へ</button>
+</section>
+
+<section id="result" hidden>
+  <p class="sub">あなたの急ぎの、いちばん近くにあるもの</p>
+  <h2 id="rtitle"></h2>
+  <p id="rlead"></p>
+  <div id="cats"></div>
+  <div class="tip"><p class="sub" style="margin-bottom:.4rem">いま急いでいることがあれば</p><p style="margin:0">動き出す前に、4つだけ問いかけさせてください。答えは書かなくても大丈夫です。</p></div>
+  <button class="link" id="rback">戻る</button>
+  <button class="go" id="toBreath">ひと息つく</button>
+</section>
+
+<section id="pager" hidden>
+  <div class="prog" aria-hidden="true"><i id="gbar"></i></div>
+  <p class="sub" id="glabel"></p>
+  <h2 id="gq" aria-live="polite"></h2>
+  <textarea id="gtxt" aria-labelledby="gq" placeholder="思いついたことを、そのまま。空欄でも大丈夫です。"></textarea>
+  <div style="margin-top:.8rem"><button class="link" id="gback">戻る</button><button class="go" id="gnext">次へ</button></div>
+</section>
+
+<section id="choice" hidden>
+  <h2>ここで終わっても、続けても。</h2>
+  <p>この先は、急ぎの話から少し離れて、自分が大事にしたいことを考える3つの問いです。</p>
+  <button class="go" id="goOn">続きへ</button>
+  <button class="link" id="goEnd">ここで終わる</button>
+  <button class="link" id="cback">戻る</button>
+</section>
+
+<section id="end" hidden>
+  <h2>自分の道を、自分のペースで。</h2>
+  <div id="notes"></div>
+  <p class="sub">答えと書いたことは、この端末のこのブラウザに保存されています。次に開いたときは、続きから始まります。「はじめに戻る」を押すと消えます。</p>
+  <button class="link" id="eback">戻る</button>
+  <button class="go" id="again">はじめに戻る</button>
+</section>
+</main>
+
+<script>
+var CATS=[
+ {n:"応えたい気持ち",d:"人を待たせたくない、迷惑をかけたくない",
+  t:"人の期待に、誠実に応えようとしている",
+  l:"急ぐのは、周りの人を大切にしているからかもしれません。責任感の強さが、あなたの速さをつくっているようです。"},
+ {n:"遅れたくない気持ち",d:"周りや年齢、立場を意識する",
+  t:"自分の居場所を、しっかり守ろうとしている",
+  l:"急ぐのは、置いていかれたくない、きちんとしていたいという気持ちからかもしれません。周りをよく見られる人でもあります。"},
+ {n:"進んでいたい気持ち",d:"手応えや安心がほしい",
+  t:"前に進む実感を、大事にしている",
+  l:"急ぐのは、進んでいる実感が自分を支えているからかもしれません。動く力のある人です。"}
+];
+var QS=[
+ [0,"人を待たせたくない、迷惑をかけたくないと思う。"],
+ [0,"頼まれたことは、できるだけ早く返したい。"],
+ [0,"自分が遅れると、全体が止まってしまう気がする。"],
+ [1,"周りの人が、自分より先に進んでいるように見えることがある。"],
+ [1,"年齢や立場を考えて、これくらいは済ませておくべきだと思う。"],
+ [1,"立ち止まると、取り残される気がする。"],
+ [2,"何かが終わると、気持ちがすっきりする。"],
+ [2,"手を止めていると、時間をむだにしている気がする。"],
+ [2,"やることが見えているほうが、安心する。"]
+];
+var CH=["当てはまらない","少し当てはまる","わりと当てはまる","とても当てはまる"];
+var BREATH={label:"ひと息",items:[
+ "いま急いでいることを、ひとつ思い浮かべてください。それは本当は、いつまでに必要ですか。",
+ "それを急いで進めると、何が手に入りますか。何を手放しますか。",
+ "それが終わったら、何が変わりますか。",
+ "いま急いでいる基準は、誰のものですか。"]};
+var VALUES={label:"大事にしたいこと",items:[
+ "年齢や世間体を考えなくていいなら、何を大事にしたいですか。",
+ "急いででも守りたいものは、何ですか。",
+ "5年後の自分が「それは急がなくていいよ」と言うとしたら、どれですか。"]};
+var ans=[],i=0,cur=null,pi=0,notes=[];
+function $(id){return document.getElementById(id)}
+var scr="intro",draft="",endFrom="C";
+function save(){try{localStorage.setItem("oyw",JSON.stringify({scr:scr,i:i,ans:ans,notes:notes,cur:cur===BREATH?"B":cur===VALUES?"V":null,pi:pi,draft:draft,ef:endFrom}))}catch(e){}}
+function clearSave(){try{localStorage.removeItem("oyw")}catch(e){}}
+function show(id){scr=id;["intro","quiz","result","pager","choice","end"].forEach(function(s){$(s).hidden=(s!==id)});window.scrollTo(0,0);if(id==="intro"){clearSave()}else{save()}}
+function render(){
+  $("count").textContent=(i+1)+" / "+QS.length;
+  $("pbar").style.width=(i/QS.length*100)+"%";
+  $("q").textContent=QS[i][1];
+  var o=$("opts");o.innerHTML="";
+  CH.forEach(function(t,v){
+    var b=document.createElement("button");
+    b.className="opt";b.setAttribute("role","radio");
+    b.setAttribute("aria-checked",ans[i]===v?"true":"false");
+    b.textContent=t;
+    b.onclick=function(){ans[i]=v;render()};
+    o.appendChild(b);
+  });
+  $("next").disabled=(ans[i]===undefined);
+  $("next").textContent=(i===QS.length-1)?"結果を見る":"次へ";
+  save();
+}
+function finish(){
+  var s=[0,0,0],top=0;
+  QS.forEach(function(q,k){s[q[0]]+=ans[k]});
+  s.forEach(function(x,k){if(x>s[top])top=k});
+  $("rtitle").textContent="あなたは、"+CATS[top].t+"人かもしれません";
+  $("rlead").textContent=CATS[top].l;
+  var c=$("cats");c.innerHTML="";
+  s.forEach(function(x,k){
+    var d=document.createElement("div");d.className="cat";
+    d.innerHTML='<b></b><div class="sub"></div><div class="bar"><i style="width:0"></i></div>';
+    d.children[0].textContent=CATS[k].n;
+    d.children[1].textContent=CATS[k].d;
+    c.appendChild(d);
+    setTimeout(function(){d.querySelector("i").style.width=(x/9*100)+"%"},200);
+  });
+  show("result");
+}
+function popNote(q){for(var k=0;k<notes.length;k++){if(notes[k].q===q){return notes.splice(k,1)[0].a}}return ""}
+function pager(set,at){cur=set;pi=at||0;drawPage();show("pager")}
+function drawPage(d){
+  var n=cur.items.length;
+  $("glabel").textContent=cur.label+"　"+(pi+1)+" / "+n;
+  $("gbar").style.width=(pi/n*100)+"%";
+  $("gq").textContent=cur.items[pi];
+  if(d===undefined){d=popNote(cur.items[pi])}
+  $("gtxt").value=d;draft=d;save();
+  $("gnext").textContent=(pi===n-1)?"おわる":"次へ";
+  $("gtxt").focus();
+}
+$("gnext").onclick=function(){
+  var t=$("gtxt").value.trim();
+  if(t)notes.push({q:cur.items[pi],a:t});
+  draft="";
+  if(pi<cur.items.length-1){pi++;drawPage();return}
+  if(cur===BREATH){show("choice")}else{endFrom="V";showEnd()}
+};
+function showEnd(){
+  var ALL=BREATH.items.concat(VALUES.items);
+  notes.sort(function(a,b){return ALL.indexOf(a.q)-ALL.indexOf(b.q)});
+  var n=$("notes");n.innerHTML="";
+  if(notes.length){
+    var h=document.createElement("p");h.className="sub";h.textContent="あなたが書いたこと";n.appendChild(h);
+    notes.forEach(function(x){
+      var d=document.createElement("div");d.className="note";
+      var a=document.createElement("div");a.className="sub";a.textContent=x.q;
+      var b=document.createElement("div");b.textContent=x.a;
+      d.appendChild(a);d.appendChild(b);n.appendChild(d);
+    });
+  }else{
+    var e=document.createElement("p");e.textContent="書かなくても、問いを通ってきたことが、もう一歩です。";n.appendChild(e);
+  }
+  show("end");
+}
+$("start").onclick=function(){i=0;ans=[];notes=[];render();show("quiz")};
+$("next").onclick=function(){if(i<QS.length-1){i++;render()}else{finish()}};
+$("back").onclick=function(){if(i>0){i--;render()}else{show("intro")}};
+$("toBreath").onclick=function(){pager(BREATH)};
+$("goOn").onclick=function(){pager(VALUES)};
+$("goEnd").onclick=function(){endFrom="C";showEnd()};
+$("again").onclick=function(){ans=[];notes=[];i=0;pi=0;cur=null;draft="";show("intro")};
+$("gtxt").oninput=function(){draft=this.value;save()};
+$("gback").onclick=function(){var t=$("gtxt").value.trim();if(t)notes.push({q:cur.items[pi],a:t});draft="";
+ if(pi>0){pi--;drawPage()}else if(cur===BREATH){finish()}else{show("choice")}};
+$("rback").onclick=function(){i=QS.length-1;render();show("quiz")};
+$("cback").onclick=function(){pager(BREATH,BREATH.items.length-1)};
+$("eback").onclick=function(){if(endFrom==="V"){pager(VALUES,VALUES.items.length-1)}else{show("choice")}};
+try{var s=JSON.parse(localStorage.getItem("oyw")||"null");
+if(s&&s.scr&&s.scr!=="intro"){ans=s.ans||[];notes=s.notes||[];endFrom=s.ef||"C";i=s.i||0;pi=s.pi||0;
+ if(s.scr==="quiz"){render();show("quiz")}
+ else if(s.scr==="result"){finish()}
+ else if(s.scr==="pager"&&s.cur){cur=s.cur==="B"?BREATH:VALUES;drawPage(s.draft);show("pager")}
+ else if(s.scr==="choice"){show("choice")}
+ else if(s.scr==="end"){showEnd()}}}catch(e){}
+</script>
+</body>
+</html>
